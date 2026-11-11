@@ -21,13 +21,38 @@ app = Flask(__name__, static_folder='static', template_folder='templates')
 app.config.update(
     SECRET_KEY=os.environ.get('FLASK_SECRET_KEY') or secrets.token_hex(32),
     SESSION_COOKIE_HTTPONLY=True,
-    SESSION_COOKIE_SAMESITE='Lax',
-    SESSION_COOKIE_SECURE=os.environ.get('COOKIE_SECURE', 'false').lower() == 'true',
+    SESSION_COOKIE_SAMESITE='None',
+    SESSION_COOKIE_SECURE=os.environ.get('COOKIE_SECURE', 'true').lower() == 'true',
     MAX_CONTENT_LENGTH=1024*1024,
     JSON_SORT_KEYS=False,
 )
+
 logging.basicConfig(level=logging.INFO)
 
+# Allow the GitHub Pages frontend to communicate with this Flask API.
+# Set FRONTEND_ORIGINS in Render to the exact frontend origin.
+ALLOWED_ORIGINS = {
+    origin.strip().rstrip('/')
+    for origin in os.environ.get('FRONTEND_ORIGINS', '').split(',')
+    if origin.strip()
+}
+
+@app.after_request
+def add_cors_headers(response):
+    origin = request.headers.get('Origin', '').rstrip('/')
+
+    if origin in ALLOWED_ORIGINS:
+        response.headers['Access-Control-Allow-Origin'] = origin
+        response.headers['Access-Control-Allow-Credentials'] = 'true'
+        response.headers['Access-Control-Allow-Headers'] = (
+            'Content-Type, X-CSRF-Token'
+        )
+        response.headers['Access-Control-Allow-Methods'] = (
+            'GET, POST, PUT, PATCH, DELETE, OPTIONS'
+        )
+        response.headers.add('Vary', 'Origin')
+
+    return response
 
 def connection():
     raw = os.environ.get('SQL_CONNECTION_STRING')
