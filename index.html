@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="NEWCORP — community projects, teams and donations." />
+  <title>NEWCORP | Community, powered together</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/styles.css" />
+  <script src="/static/app.js" defer></script>
+</head>
+<body>
+  <div class="demo-banner"><span class="demo-dot"></span> NEWCORP · CONNECTED APPLICATION <span class="demo-banner-note">Database-backed · No payment gateway configured</span></div>
+  <header class="site-header">
+    <a class="brand" href="#home" aria-label="NEWCORP home">
+      <span class="brand-mark">N</span><span>NEWCORP<span class="brand-period">.</span></span>
+    </a>
+    <button class="mobile-menu-button" id="mobileMenuButton" aria-label="Toggle navigation" aria-expanded="false">☰</button>
+    <nav class="main-nav" id="mainNav" aria-label="Main navigation">
+      <a href="#home" data-nav="home">Home</a>
+      <a href="#projects" data-nav="projects">Projects</a>
+      <a href="#teams" data-nav="teams">Teams</a>
+      <a href="#reports" data-nav="reports">Reports</a>
+      <a href="#dashboard" data-nav="dashboard">Dashboard</a>
+      <a href="#donations" data-nav="donations">My donations</a>
+      <a id="accountNavLink" href="#login" data-nav="login">Sign in</a>
+      <button class="btn btn-outline btn-sm" data-action="logout" id="logoutButton">Sign out</button>
+    </nav>
+    <div class="header-actions">
+      
+
+      <button class="avatar-button" id="accountButton" title="Account menu">JB</button>
+    </div>
+  </header>
+
+  <main id="app" class="app-shell" tabindex="-1">
+    <div class="loading-state">Loading NEWCORP…</div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-brand"><span class="brand-mark small">N</span><strong>NEWCORP<span class="brand-period">.</span></strong></div>
+    <p>Building stronger communities through shared effort.</p>
+    <span>© <span id="footerYear"></span> NEWCORP · Full-stack application</span>
+  </footer>
+
+  <div id="modalRoot" class="modal-root" aria-live="polite"></div>
+  <div id="toastRoot" class="toast-root" aria-live="polite" aria-atomic="true"></div>
+</body>
+</html>
