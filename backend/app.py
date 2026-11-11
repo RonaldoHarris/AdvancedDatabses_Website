@@ -55,20 +55,43 @@ def add_cors_headers(response):
     return response
 
 def connection():
+    # Allow a complete connection string to override individual settings.
     raw = os.environ.get('SQL_CONNECTION_STRING')
     if raw:
-        return pyodbc.connect(raw, timeout=6, autocommit=False)
-    driver = os.environ.get('SQL_DRIVER', 'ODBC Driver 18 for SQL Server')
-    server = os.environ.get('SQL_SERVER', 'localhost')
+        return pyodbc.connect(raw, timeout=10, autocommit=False)
+
+    driver = os.environ.get(
+        'SQL_DRIVER', 'ODBC Driver 18 for SQL Server'
+    )
+    server = os.environ.get('SQL_SERVER')
     database = os.environ.get('SQL_DATABASE', 'NEWCORP_DB')
-    encrypt = os.environ.get('SQL_ENCRYPT', 'yes')
-    trust = os.environ.get('SQL_TRUST_SERVER_CERTIFICATE', 'yes')
-    user, password = os.environ.get('SQL_USER'), os.environ.get('SQL_PASSWORD')
-    auth = f'UID={user};PWD={password};' if user else 'Trusted_Connection=yes;'
+    user = os.environ.get('SQL_USER')
+    password = os.environ.get('SQL_PASSWORD')
+
+    # Azure SQL requires SQL Server authentication credentials here.
+    if not all([server, database, user, password]):
+        raise RuntimeError(
+            'Missing required Azure SQL connection environment variables.'
+        )
+
+    # Escape special characters in connection string values.
+    def safe(value):
+        return '{' + value.replace('}', '}}') + '}'
+
+    connection_string = (
+        f'DRIVER={{{driver}}};'
+        f'SERVER={safe(server)};'
+        f'DATABASE={safe(database)};'
+        f'UID={safe(user)};'
+        f'PWD={safe(password)};'
+        'Encrypt=yes;'
+        'TrustServerCertificate=no;'
+    )
+
     return pyodbc.connect(
-        f'DRIVER={{{driver}}};SERVER={server};DATABASE={database};'
-        f'Encrypt={encrypt};TrustServerCertificate={trust};{auth}',
-        timeout=6, autocommit=False,
+        connection_string,
+        timeout=10,
+        autocommit=False
     )
 
 
