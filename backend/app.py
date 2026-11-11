@@ -229,10 +229,6 @@ def csrf_protection():
             abort(403, 'Invalid security token. Reload the page.')
 
 
-@app.get('/')
-def index():
-    return send_from_directory('templates', 'index.html')
-
 
 @app.get('/api/health')
 def health():
