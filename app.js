@@ -28,7 +28,7 @@
  */
 
 const DEMO_MODE = false;
-const API_BASE_URL = "/api"; // Change to the Flask API URL later.
+const API_BASE_URL = "https://newcorp-backend.onrender.com";
 const API_ROUTES = {
   login: "/auth/login", logout: "/auth/logout", register: "/auth/register", profile: "/users/me",
   projects: "/projects", project: "/projects/:id", createCharityProject: "/projects/charity",
