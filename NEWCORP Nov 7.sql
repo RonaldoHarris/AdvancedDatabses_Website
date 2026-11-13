@@ -99,8 +99,22 @@ CREATE TABLE CHARITY_PROJECT (
     CONSTRAINT fk_charity_project FOREIGN KEY (Project_ID) REFERENCES PROJECT(Project_ID)
 );
 
-
 --POPULATION
+-- To Populate USER_
+INSERT INTO USER_
+(First_Name, Last_Name, Email_Address, Mobile_Number,
+ Street_Name, Street_Number, City, Country, Postal_Zone, Password_Hash)
+VALUES
+('John', 'Gray', 'test01@example.com', '876-101-1234',
+ 'Black street', '10', 'Kingston', 'Jamaica', '00000', 'scrypt:32768:8:1$SZ2wprTTl4BvvJxb$3a63e9a0e4d4397bab90a96958d75f4b173a86d646ab6af41bd6a2ea786b52e9ef974897147565d1bdd743e4b68ec0c7953e9b7c7caf1535b083d61649b9064a'), --password johngray
+
+('Melisa', 'Green', 'test02@example.com', '876-999-9009',
+ 'Waterloo', '15', 'Kingston', 'Jamaica', '10001', 'scrypt:32768:8:1$SbB2H57oS4gudkK2$e88b48560517dd2897c4d13126b79c94670020dbfd5b8241ad814e678152b9fee17d1ff775bb144a2eadcc71991904d5a6de9e9fd94e8df7f81245212147f335'); --password melisagreen
+
+
+
+
+--POPULATION (Dummy Accounts to support pre existing Teams and Donations)
 -- To Populate USER_
 INSERT INTO USER_
 (First_Name, Last_Name, Email_Address, Mobile_Number,
@@ -122,7 +136,7 @@ VALUES
  'Constant Spring Road', '45', 'Kingston', 'Jamaica', 'JMKN03');
 
 
-
+ 
  -- To Populate TEAM
 INSERT INTO TEAM
 (Team_Name, Created_Date)
@@ -146,25 +160,24 @@ VALUES
 (5, 1);
 
 
-
+*/
 -- To Populate PROJECT
 INSERT INTO PROJECT
 (Posted_Date, Description, Closing_Date, Target_Amount, Team_ID)
 VALUES
 ('2026-04-01', 'Community Centre Renovation',
- '2026-06-30', 500000.00, 1),
+ '2026-06-30', 500000.00, 1), --To demonstrate a closed project
 
 ('2026-04-15', 'Cybersecurity Training Programme',
- '2026-07-31', 750000.00, 2),
+ '2026-12-12', 750000.00, 2), -- To demonstrate an ongoing project
 
 ('2026-05-01', 'School Technology Initiative',
- '2026-08-31', 1000000.00, 3),
+ '2027-02-17', 1000000.00, 3), --Ongoing --Pending to demonstrate a funded project
 
 ('2026-05-15', 'Community Food Support Programme',
- '2026-09-30', 300000.00, 1);
-
-
-
+ '2027-09-30', 300000.00, 1); --To demonstrate the 1:M relationship between teams and Projects
+ 
+ 
  -- To Populate DONATION
 INSERT INTO DONATION
 (User_ID, Donation_Number, Project_ID, Donation_Date, Donation_Amount)
@@ -173,18 +186,17 @@ VALUES
 (2, 1, 1, '2026-04-12', 75000.00),
 (2, 2, 2, '2026-04-20', 100000.00),
 (3, 1, 2, '2026-04-25', 50000.00),
-(1, 2, 3, '2026-05-10', 125000.00),
-(4, 1, 3, '2026-05-15', 200000.00),
 (5, 1, 4, '2026-05-20', 25000.00),
-(3, 2, 4, '2026-05-25', 50000.00);
+(7, 1, 3, '2026-11-12', 1000000.00), --to complete the funding on project 3
+(3, 2, 4, '2026-05-25', 50000.00); 
 
 
 
--- To Populate COMMERCIAL_PROJECT
+/*-- To Populate COMMERCIAL_PROJECT
 INSERT INTO COMMERCIAL_PROJECT
 (Project_ID, Profit_Margin)
 VALUES
-(2, 25.00);
+(2, 25.00);*/ --this is done automatically
 
 
 
@@ -197,6 +209,8 @@ VALUES
 (3, 'Students and teachers in participating schools'),
 
 (4, 'Low-income families and vulnerable members of the community');
+
+
 
 --=================================================================================================
 /*VIEWS
@@ -467,7 +481,7 @@ EXEC dbo.sp_DonationInfo
 --          including the project, donation date and amount.
 -- ================================================================
 GO
-CREATE PROCEDURE dbo.sp_UserDonationHistory
+CREATE OR ALTER PROCEDURE dbo.sp_UserDonationHistory
     @User_ID INT              -- User ID used to identify the user
 AS
 BEGIN
@@ -501,7 +515,7 @@ BEGIN
     ORDER BY D.Donation_Date DESC;
 END;
 
-
+GO
 
 EXEC dbo.sp_UserDonationHistory 1;
 
@@ -513,7 +527,7 @@ EXEC dbo.sp_UserDonationHistory 1;
 --          including their contact information.
 -- ============================================================
 GO
-CREATE PROCEDURE dbo.sp_TeamMembers
+CREATE OR ALTER PROCEDURE dbo.sp_TeamMembers
     @Team_ID INT              -- Team ID used to identify the team
 AS
 BEGIN
@@ -545,6 +559,7 @@ BEGIN
     ORDER BY U.Last_Name, U.First_Name;
 END;
 
+GO
 
 EXEC dbo.sp_TeamMembers 1;
 
@@ -707,7 +722,7 @@ END CATCH;
 -- Base Tables: DONATION, PROJECT
 
 GO
-CREATE TRIGGER dbo.trg_PreventProjectOverfunding
+CREATE OR ALTER TRIGGER dbo.trg_PreventProjectOverfunding
 ON dbo.DONATION
 AFTER INSERT, UPDATE
 AS
@@ -736,23 +751,23 @@ BEGIN
               1;
     END;
 END;
+GO
 
-
--- Test: Attempt to exceed the project's funding target.
+/*-- Test: Attempt to exceed the project's funding target.
 INSERT INTO dbo.DONATION
     (User_ID, Donation_Number, Project_ID,
      Donation_Date, Donation_Amount)
 VALUES
-    (1, 999, 1, GETDATE(), 500000.00);
+    (1, 999, 1, GETDATE(), 500000.00);*/
 
 
 
 
--- Trigger
+-- Trigger 2
 -- Purpose: Reject donations after a project's closing date.
 -- Base Tables: DONATION, PROJECT
 GO
-CREATE TRIGGER dbo.trg_PreventDonationAfterClosing
+CREATE OR ALTER TRIGGER dbo.trg_PreventDonationAfterClosing
 ON dbo.DONATION
 AFTER INSERT, UPDATE
 AS
@@ -777,24 +792,25 @@ BEGIN
     END;
 END;
 
+GO
 
--- Test 2: Attempt to donate to a closed project.
+/*-- Test 2: Attempt to donate to a closed project.
 INSERT INTO dbo.DONATION
     (User_ID, Donation_Number, Project_ID,
      Donation_Date, Donation_Amount)
 VALUES
-    (1, 998, 1, GETDATE(), 100.00)
+    (1, 998, 1, GETDATE(), 100.00)*/
 
 
 
 
--- Display triggers created on the DONATION table.
+/*-- Display triggers created on the DONATION table.
 SELECT
     name AS Trigger_Name,
     is_disabled AS Is_Disabled
 FROM sys.triggers
-WHERE parent_id = OBJECT_ID('dbo.DONATION');
-
+WHERE parent_id = OBJECT_ID('dbo.DONATION');*/
+--------------------------------------------------------------------------------------
 /*	Trigger 3
 	Base Tables:
 	Purpose: 
@@ -877,9 +893,9 @@ BEGIN
 END;
 GO
 
-UPDATE PROJECT
+/*UPDATE PROJECT
 SET Target_Amount = 50000
-WHERE Project_ID = 1;
+WHERE Project_ID = 1;*/
 
 
 /*	Trigger 5
@@ -915,10 +931,10 @@ BEGIN
 		END;
 END;
 GO
-
-UPDATE PROJECT
+/*
+/*UPDATE PROJECT
 SET Closing_Date = '2020-10-20'
-WHERE Project_ID = 1;
+WHERE Project_ID = 1;*/
 
 --================================================================================================================================
 /*	Security Feature 1 - Roles and Logins
@@ -1079,7 +1095,7 @@ EXEC dbo.RemoveTeamMember
 	select * from
 	USER_;
 
-
+	*/
 --=================================================================================================
 -- NEWCORP DATABASE ENHANCEMENTS
 -- Added after the original assignment SQL so the original work remains intact.
@@ -1101,7 +1117,7 @@ EXEC dbo.RemoveTeamMember
 GO
 
 ---------------------------------------------------------------------------------------------------
--- A. Website account roles and account fields
+-- A. Website account roles and account fields (SECURITY FEATURE 1)
 ---------------------------------------------------------------------------------------------------
 CREATE TABLE dbo.APP_ROLE
 (
@@ -1233,7 +1249,7 @@ FROM AUDIT_LOG
 
 ---------------------------------------------------------------------------------------------------
 -- E. Registration and profile management
--- The Python backend must hash the password and pass only the resulting hash to this procedure.
+-- The Python backend must hash the password and pass only the resulting hash to this procedure. (SECURITY FEATURE 2)
 ---------------------------------------------------------------------------------------------------
 GO
 CREATE OR ALTER PROCEDURE dbo.sp_RegisterUser
@@ -1509,7 +1525,7 @@ GO
 
 ---------------------------------------------------------------------------------------------------
 -- G. Project creation and editing
--- New projects are submitted as Pending and become publicly visible after moderator approval.
+-- New projects are submitted as Pending and become publicly visible after moderator approval. (SECURITY FEATURE 3)
 ---------------------------------------------------------------------------------------------------
 CREATE OR ALTER PROCEDURE dbo.sp_CreateCharityProject
     @Actor_User_ID INT,
@@ -1886,13 +1902,21 @@ SELECT * FROM USER_;
 
 
 ---------------------------------------------------------------------------------------------------
--- K. Example moderator promotion (OPTIONAL; run only after choosing the intended moderator).
--- No sample user is automatically made a moderator by this script.
+-- K. Example moderator promotion 
 ---------------------------------------------------------------------------------------------------
--- UPDATE dbo.USER_
--- SET Role_ID = (SELECT Role_ID FROM dbo.APP_ROLE WHERE Role_Name = 'Moderator')
--- WHERE Email_Address = 'replace-with-the-approved-moderator-email';
--- GO
+UPDATE dbo.USER_
+SET Role_ID = (SELECT Role_ID FROM dbo.APP_ROLE WHERE Role_Name = 'Moderator')
+WHERE Email_Address = 'test01@example.com';
+GO
+
+
+
+
+
+
+
+
+
 
 ---------------------------------------------------------------------------------------------------
 -- L. Website integration notes
